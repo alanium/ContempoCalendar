@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FullCalendar Example</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='fullcalendar.min.css') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+        }
+    
+        #calendar {
+            max-width: 1200px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+    
+        .event-details {
+            margin-top: 10px;
+        }
+    
+        .fc-content {
+            padding: 5px;
+            border-radius: 5px;
+            background-color: #4285f4;
+            color: #fff;
+            cursor: pointer;
+        }
+    
+        .fc-event {
+            margin-bottom: 15px;
+        }
+    
+        .fc-day-header {
+            background-color: #4285f4;
+            color: #fff;
+        }
+
+        /* Estilo personalizado para la cabecera */
+        .fc-toolbar {
+            text-align: left;
+        }
+
+        .fc-center h2 {
+            display: inline-block;
+            margin-right: 10px;
+        }
+    </style>
+    
+</head>
+<body>
+
+<div id="calendar"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
+
+<script>
+    // Lista de colores predefinidos
+    var colorList = ['#FF5733', '#3C7045', '#5733FF', '#883F66', '#5E8BB2'];
+
+    function stringToColor(str) {
+        // Obtener el índice basado en el valor de 'sub'
+        var index = Math.abs(str.charCodeAt(0) % colorList.length);
+        return colorList[index];
+    }
+
+    $(document).ready(function() {
+        $('#calendar').fullCalendar({
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: ''
+            },
+            events: '/events',
+            eventRender: function(event, element) {
+                var detailsHtml = '<div class="event-details">' +
+                                  '<p><strong>Address:</strong> ' + event.address + '</p>' +
+                                  '<p><strong>Sub task:</strong> ' + event.sub_task + '</p>' +
+                                  '<p><strong>Sub:</strong> ' + event.sub + '</p>' +
+                                  '</div>';
+                
+                element.find('.fc-content').append(detailsHtml);
+
+                // Obtener color de la lista basado en el valor de 'sub'
+                var color = stringToColor(event.sub);
+
+                // Aplicar el color al evento
+                element.find('.fc-content').css('background-color', color);
+
+                // Agregar un manejo de eventos al hacer clic en un evento
+                element.on('click', function() {
+                    alert(
+                          event.title + '\n' +
+                          'Sub-task: ' + event.sub_task + '\n' +
+                          'Sub: ' + event.sub);
+                });
+            },
+            defaultView: 'month'
+        });
+    });
+</script>
+
+
+</body>
+</html>
