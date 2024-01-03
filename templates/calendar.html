@@ -1,32 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FullCalendar Example</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='fullcalendar.min.css') }}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css">
     <style>
-        body, html {
+        body,
+        html {
             margin: 0;
             padding: 0;
             font-family: 'Roboto', sans-serif;
             background-color: #f5f5f5;
+            display: flex;
+            height: 100vh;
         }
-    
-        #calendar {
-            max-width: 1200px;
-            margin: 40px auto;
+
+        #sidebar {
+            width: 300px;
+            padding: 20px;
             background-color: #ffffff;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
-            overflow: hidden;
         }
-    
+
+        #calendar-container {
+            flex: 1;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        #calendar {
+            width: 100%;
+        }
+
         .event-details {
             margin-top: 10px;
+            font-size: 10px;
+            max-height: 20px;
         }
-    
+
         .fc-content {
             padding: 5px;
             border-radius: 5px;
@@ -34,11 +51,11 @@
             color: #fff;
             cursor: pointer;
         }
-    
+
         .fc-event {
             margin-bottom: 15px;
         }
-    
+
         .fc-day-header {
             background-color: #4285f4;
             color: #fff;
@@ -53,63 +70,137 @@
             display: inline-block;
             margin-right: 10px;
         }
+
+        /* Estilo para limitar la altura máxima de la lista desplegable */
+        #subFilter {
+            width: 100%; /* Asegurar que ocupe todo el ancho disponible */
+        }
     </style>
-    
 </head>
+
 <body>
 
-<div id="calendar"></div>
+    <div id="sidebar">
+        <label for="subFilter">Filter by Sub:</label>
+        <select id="subFilter" multiple="multiple">
+        </select>
+    </div>
 
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
+    <div id="calendar-container">
+        <div id="calendar"></div>
+    </div>
 
-<script>
-    // Lista de colores predefinidos
-    var colorList = ['#FF5733', '#3C7045', '#5733FF', '#883F66', '#5E8BB2'];
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
 
-    function stringToColor(str) {
-        // Obtener el índice basado en el valor de 'sub'
-        var index = Math.abs(str.charCodeAt(0) % colorList.length);
-        return colorList[index];
-    }
+    <script>
+        // Lista de colores predefinidos
+        var colorList = ['#FF5733', '#3C7045', '#5733FF', '#883F66', '#5E8BB2'];
 
-    $(document).ready(function() {
-        $('#calendar').fullCalendar({
-            header: {
-                left: 'prev,next today',
-                center: 'title',
-                right: ''
-            },
-            events: '/events',
-            eventRender: function(event, element) {
-                var detailsHtml = '<div class="event-details">' +
-                                  '<p><strong>Address:</strong> ' + event.address + '</p>' +
-                                  '<p><strong>Sub task:</strong> ' + event.sub_task + '</p>' +
-                                  '<p><strong>Sub:</strong> ' + event.sub + '</p>' +
-                                  '</div>';
-                
-                element.find('.fc-content').append(detailsHtml);
+        function stringToColor(str) {
+            // Obtener el índice basado en el valor de 'sub'
+            var index = Math.abs(str.charCodeAt(0) % colorList.length);
+            return colorList[index];
+        }
 
-                // Obtener color de la lista basado en el valor de 'sub'
-                var color = stringToColor(event.sub);
+        $(document).ready(function () {
+            // Obtener datos iniciales
+            var initialData;
+            $.ajax({
+                url: '/events',
+                type: 'GET',
+                async: false, // Síncrono para asegurar la carga inicial de datos
+                success: function (data) {
+                    initialData = data;
+                }
+            });
 
-                // Aplicar el color al evento
-                element.find('.fc-content').css('background-color', color);
+            // Llenar las opciones de la lista desplegable con valores únicos de 'sub'
+            var uniqueSubs = Array.from(new Set(initialData.map(function (event) {
+                return event.sub;
+            })));
 
-                // Agregar un manejo de eventos al hacer clic en un evento
-                element.on('click', function() {
-                    alert(
-                          event.title + '\n' +
-                          'Sub-task: ' + event.sub_task + '\n' +
-                          'Sub: ' + event.sub);
-                });
-            },
-            defaultView: 'month'
+            // Inicializa Select2 en la lista desplegable
+            $('#subFilter').select2({
+                width: 'resolve' // Hacer que la anchura se ajuste automáticamente
+            });
+
+            // Agregar opciones al filtro
+            uniqueSubs.forEach(function (sub) {
+                $('#subFilter').append($('<option>', {
+                    value: sub,
+                    text: sub
+                }));
+            });
+
+            $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: ''
+                },
+                events: initialData,
+                eventRender: function (event, element) {
+                    var detailsHtml = '<div class="event-details">' +
+                        '<p><strong>Address:</strong> ' + event.address + '</p>' +
+                        '<p><strong>Sub task:</strong> ' + event.sub_task + '</p>' +
+                        '<p><strong>Sub:</strong> ' + event.sub + '</p>' +
+                        '</div>';
+
+                    element.find('.fc-content').append(detailsHtml);
+
+                    // Obtener color de la lista basado en el valor de 'sub'
+                    var color = stringToColor(event.sub);
+
+                    // Aplicar el color al evento
+                    element.find('.fc-content').css('background-color', color);
+
+                    // Agregar un manejo de eventos al hacer clic en un evento
+                    element.on('click', function () {
+                        alert(
+                            'Task-name: ' + event.title + '\n' +
+                            'Sub-task: ' + event.sub_task + '\n' +
+                            'Address: ' + event.address + '\n' +
+                            'Sub: ' + event.sub);
+                    });
+                },
+                defaultView: 'month'
+            });
+
+            $(window).on('resize', function() {
+                var containerHeight = $('#calendar-container').height();
+                $('#calendar').fullCalendar('option', 'height', containerHeight);
+            }).trigger('resize'); // Disparar el evento resize inicialmente
+
+
+
+            // Manejar cambios en la lista desplegable usando 'select2:select'
+            $('#subFilter').on('select2:select select2:unselect', function (e) {
+                // Obtener valores seleccionados
+                var selectedSubs = $(this).val();
+
+                // Filtrar eventos basados en los valores seleccionados o mostrar todos si no hay filtros
+                var filteredEvents;
+
+                if (selectedSubs && selectedSubs.length > 0) {
+                    filteredEvents = initialData.filter(function (event) {
+                        return selectedSubs.includes(event.sub);
+                    });
+                } else {
+                    filteredEvents = initialData;
+                }
+
+                // Limpiar el calendario
+                $('#calendar').fullCalendar('removeEvents');
+
+                // Agregar los eventos filtrados al calendario
+                $('#calendar').fullCalendar('addEventSource', filteredEvents);
+            });
         });
-    });
-</script>
-
+    </script>
 
 </body>
+
 </html>
