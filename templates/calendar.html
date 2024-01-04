@@ -75,12 +75,14 @@
         #addressFilter {
             width: 100%;
         }
+    </style>
 
-        @media only screen and (min-width: 300px) {
+    <style>
+        @media only screen and (max-width: 768px) {
             #subFilter,
             #pmFilter,
             #addressFilter {
-                width: 90%;
+                width: 100%;
             }
             #sidebar {
                 width: 100%;
@@ -88,8 +90,8 @@
                 background-color: #ffffff;
                 box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
                 border-radius: 10px;
-                border: 1px solid red
             }
+
             #calendar-container {
                 flex: 1;
                 background-color: #ffffff;
@@ -101,8 +103,11 @@
                 display: grid;
                 overflow: hidden;
             }
-    }
+        }
     </style>
+
+    
+
 </head>
 
 <body>
