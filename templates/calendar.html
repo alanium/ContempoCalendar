@@ -72,6 +72,7 @@
         }
 
         #subFilter,
+        #pmFilter,
         #addressFilter {
             width: 100%;
         }
@@ -87,6 +88,9 @@
         <hr>
         <label for="addressFilter">Filter by Project</label>
         <select id="addressFilter" multiple="multiple"></select>
+        <hr>
+        <label for="pmFilter">Filter by PM:</label>
+        <select id="pmFilter" multiple="multiple"></select>
     </div>
 
     <div id="calendar-container">
@@ -103,34 +107,29 @@
         var colorList = ['#FF5733', '#3C7045', '#5733FF', '#883F66', '#5E8BB2'];
     
         function stringToColor(str) {
-            // Obtener el índice basado en el valor de 'sub'
             var index = Math.abs(str.charCodeAt(0) % colorList.length);
             return colorList[index];
         }
     
         $(document).ready(function () {
-            // Obtener datos iniciales
             var initialData;
             $.ajax({
                 url: '/events',
                 type: 'GET',
-                async: false, // Síncrono para asegurar la carga inicial de datos
+                async: false,
                 success: function (data) {
                     initialData = data;
                 }
             });
     
-            // Llenar las opciones de la lista desplegable de 'sub' con valores únicos
             var uniqueSubs = Array.from(new Set(initialData.map(function (event) {
                 return event.sub;
             })));
     
-            // Inicializar Select2 en la lista desplegable de 'sub'
             $('#subFilter').select2({
-                width: 'resolve' // Hacer que la anchura se ajuste automáticamente
+                width: 'resolve'
             });
     
-            // Agregar opciones al filtro de 'sub'
             uniqueSubs.forEach(function (sub) {
                 $('#subFilter').append($('<option>', {
                     value: sub,
@@ -138,21 +137,33 @@
                 }));
             });
     
-            // Llenar las opciones de la lista desplegable de 'address' con valores únicos
             var uniqueAddresses = Array.from(new Set(initialData.map(function (event) {
                 return event.address;
             })));
     
-            // Inicializar Select2 en la lista desplegable de 'address'
             $('#addressFilter').select2({
-                width: 'resolve' // Hacer que la anchura se ajuste automáticamente
+                width: 'resolve'
             });
     
-            // Agregar opciones al filtro de 'address'
             uniqueAddresses.forEach(function (address) {
                 $('#addressFilter').append($('<option>', {
                     value: address,
                     text: address
+                }));
+            });
+    
+            var uniquePMs = Array.from(new Set(initialData.map(function (event) {
+                return event.pm;
+            })));
+    
+            $('#pmFilter').select2({
+                width: 'resolve'
+            });
+    
+            uniquePMs.forEach(function (pm) {
+                $('#pmFilter').append($('<option>', {
+                    value: pm,
+                    text: pm
                 }));
             });
     
@@ -173,20 +184,16 @@
     
                     element.find('.fc-content').append(detailsHtml);
     
-                    // Obtener color de la lista basado en el valor de 'sub'
                     var color = stringToColor(event.sub);
-    
-                    // Aplicar el color al evento
                     element.find('.fc-content').css('background-color', color);
     
-                    // Agregar un manejo de eventos al hacer clic en un evento
                     element.on('click', function () {
                         alert(
                             'Task-name: ' + event.title + '\n' +
                             'Sub-task: ' + event.sub_task + '\n' +
                             'Address: ' + event.address + '\n' +
                             'Sub: ' + event.sub + '\n' +
-                            'PM: ' + event.pm );
+                            'PM: ' + event.pm);
                     });
                 },
                 defaultView: 'month'
@@ -195,14 +202,10 @@
             $(window).on('resize', function () {
                 var containerHeight = $('#calendar-container').height();
                 $('#calendar').fullCalendar('option', 'height', containerHeight);
-            }).trigger('resize'); // Disparar el evento resize inicialmente
+            }).trigger('resize');
     
-            // Manejar cambios en la lista desplegable de 'sub' usando 'select2:select'
             $('#subFilter').on('select2:select select2:unselect', function (e) {
-                // Obtener valores seleccionados
                 var selectedSubs = $(this).val();
-    
-                // Filtrar eventos basados en los valores seleccionados o mostrar todos si no hay filtros
                 var filteredEvents;
     
                 if (selectedSubs && selectedSubs.length > 0) {
@@ -213,19 +216,12 @@
                     filteredEvents = initialData;
                 }
     
-                // Limpiar el calendario
                 $('#calendar').fullCalendar('removeEvents');
-    
-                // Agregar los eventos filtrados al calendario
                 $('#calendar').fullCalendar('addEventSource', filteredEvents);
             });
     
-            // Manejar cambios en la lista desplegable de 'address' usando 'select2:select'
             $('#addressFilter').on('select2:select select2:unselect', function (e) {
-                // Obtener valores seleccionados
                 var selectedAddresses = $(this).val();
-    
-                // Filtrar eventos basados en los valores seleccionados o mostrar todos si no hay filtros
                 var filteredEvents;
     
                 if (selectedAddresses && selectedAddresses.length > 0) {
@@ -236,10 +232,23 @@
                     filteredEvents = initialData;
                 }
     
-                // Limpiar el calendario
                 $('#calendar').fullCalendar('removeEvents');
+                $('#calendar').fullCalendar('addEventSource', filteredEvents);
+            });
     
-                // Agregar los eventos filtrados al calendario
+            $('#pmFilter').on('select2:select select2:unselect', function (e) {
+                var selectedPMs = $(this).val();
+                var filteredEvents;
+    
+                if (selectedPMs && selectedPMs.length > 0) {
+                    filteredEvents = initialData.filter(function (event) {
+                        return selectedPMs.includes(event.pm);
+                    });
+                } else {
+                    filteredEvents = initialData;
+                }
+    
+                $('#calendar').fullCalendar('removeEvents');
                 $('#calendar').fullCalendar('addEventSource', filteredEvents);
             });
         });
