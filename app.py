@@ -41,7 +41,8 @@ def parse_event_data(data):
                 'address': row[2],
                 'sub_task': row[4],
                 'sub': row[5],
-                'pm': row[0]
+                'pm': row[0],
+                'client': row[1]
             }
             events_list.append(event)
 
