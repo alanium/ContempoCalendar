@@ -212,10 +212,7 @@
                 events: initialData,
                 eventRender: function (event, element) {
                     var detailsHtml = '<div class="event-details">' +
-                        '<p><strong>Address:</strong> ' + event.address + '</p>' +
-                        '<p><strong>Sub task:</strong> ' + event.sub_task + '</p>' +
-                        '<p><strong>Sub:</strong> ' + event.sub + '</p>' +
-                        '<p><strong>PM:</strong> ' + event.pm + '</p>' +
+                        '<p><strong>Client: </strong>' + event.client + '</p>'
                         '</div>';
 
                     element.find('.fc-content').append(detailsHtml);
