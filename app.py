@@ -40,7 +40,8 @@ def parse_event_data(data):
                 'allDay': True,
                 'address': row[2],
                 'sub_task': row[4],
-                'sub': row[5]
+                'sub': row[5],
+                'pm': row[10]
             }
             events_list.append(event)
 

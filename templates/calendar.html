@@ -71,9 +71,9 @@
             margin-right: 10px;
         }
 
-        /* Estilo para limitar la altura máxima de la lista desplegable */
-        #subFilter {
-            width: 100%; /* Asegurar que ocupe todo el ancho disponible */
+        #subFilter,
+        #addressFilter {
+            width: 100%;
         }
     </style>
 </head>
@@ -84,6 +84,9 @@
         <label for="subFilter">Filter by Sub:</label>
         <select id="subFilter" multiple="multiple">
         </select>
+        <hr>
+        <label for="addressFilter">Filter by Project</label>
+        <select id="addressFilter" multiple="multiple"></select>
     </div>
 
     <div id="calendar-container">
@@ -98,13 +101,13 @@
     <script>
         // Lista de colores predefinidos
         var colorList = ['#FF5733', '#3C7045', '#5733FF', '#883F66', '#5E8BB2'];
-
+    
         function stringToColor(str) {
             // Obtener el índice basado en el valor de 'sub'
             var index = Math.abs(str.charCodeAt(0) % colorList.length);
             return colorList[index];
         }
-
+    
         $(document).ready(function () {
             // Obtener datos iniciales
             var initialData;
@@ -116,25 +119,43 @@
                     initialData = data;
                 }
             });
-
-            // Llenar las opciones de la lista desplegable con valores únicos de 'sub'
+    
+            // Llenar las opciones de la lista desplegable de 'sub' con valores únicos
             var uniqueSubs = Array.from(new Set(initialData.map(function (event) {
                 return event.sub;
             })));
-
-            // Inicializa Select2 en la lista desplegable
+    
+            // Inicializar Select2 en la lista desplegable de 'sub'
             $('#subFilter').select2({
                 width: 'resolve' // Hacer que la anchura se ajuste automáticamente
             });
-
-            // Agregar opciones al filtro
+    
+            // Agregar opciones al filtro de 'sub'
             uniqueSubs.forEach(function (sub) {
                 $('#subFilter').append($('<option>', {
                     value: sub,
                     text: sub
                 }));
             });
-
+    
+            // Llenar las opciones de la lista desplegable de 'address' con valores únicos
+            var uniqueAddresses = Array.from(new Set(initialData.map(function (event) {
+                return event.address;
+            })));
+    
+            // Inicializar Select2 en la lista desplegable de 'address'
+            $('#addressFilter').select2({
+                width: 'resolve' // Hacer que la anchura se ajuste automáticamente
+            });
+    
+            // Agregar opciones al filtro de 'address'
+            uniqueAddresses.forEach(function (address) {
+                $('#addressFilter').append($('<option>', {
+                    value: address,
+                    text: address
+                }));
+            });
+    
             $('#calendar').fullCalendar({
                 header: {
                     left: 'prev,next today',
@@ -147,16 +168,17 @@
                         '<p><strong>Address:</strong> ' + event.address + '</p>' +
                         '<p><strong>Sub task:</strong> ' + event.sub_task + '</p>' +
                         '<p><strong>Sub:</strong> ' + event.sub + '</p>' +
+                        '<p><strong>PM:</strong> ' + event.pm + '</p>' +
                         '</div>';
-
+    
                     element.find('.fc-content').append(detailsHtml);
-
+    
                     // Obtener color de la lista basado en el valor de 'sub'
                     var color = stringToColor(event.sub);
-
+    
                     // Aplicar el color al evento
                     element.find('.fc-content').css('background-color', color);
-
+    
                     // Agregar un manejo de eventos al hacer clic en un evento
                     element.on('click', function () {
                         alert(
@@ -168,22 +190,20 @@
                 },
                 defaultView: 'month'
             });
-
-            $(window).on('resize', function() {
+    
+            $(window).on('resize', function () {
                 var containerHeight = $('#calendar-container').height();
                 $('#calendar').fullCalendar('option', 'height', containerHeight);
             }).trigger('resize'); // Disparar el evento resize inicialmente
-
-
-
-            // Manejar cambios en la lista desplegable usando 'select2:select'
+    
+            // Manejar cambios en la lista desplegable de 'sub' usando 'select2:select'
             $('#subFilter').on('select2:select select2:unselect', function (e) {
                 // Obtener valores seleccionados
                 var selectedSubs = $(this).val();
-
+    
                 // Filtrar eventos basados en los valores seleccionados o mostrar todos si no hay filtros
                 var filteredEvents;
-
+    
                 if (selectedSubs && selectedSubs.length > 0) {
                     filteredEvents = initialData.filter(function (event) {
                         return selectedSubs.includes(event.sub);
@@ -191,16 +211,39 @@
                 } else {
                     filteredEvents = initialData;
                 }
-
+    
                 // Limpiar el calendario
                 $('#calendar').fullCalendar('removeEvents');
-
+    
+                // Agregar los eventos filtrados al calendario
+                $('#calendar').fullCalendar('addEventSource', filteredEvents);
+            });
+    
+            // Manejar cambios en la lista desplegable de 'address' usando 'select2:select'
+            $('#addressFilter').on('select2:select select2:unselect', function (e) {
+                // Obtener valores seleccionados
+                var selectedAddresses = $(this).val();
+    
+                // Filtrar eventos basados en los valores seleccionados o mostrar todos si no hay filtros
+                var filteredEvents;
+    
+                if (selectedAddresses && selectedAddresses.length > 0) {
+                    filteredEvents = initialData.filter(function (event) {
+                        return selectedAddresses.includes(event.address);
+                    });
+                } else {
+                    filteredEvents = initialData;
+                }
+    
+                // Limpiar el calendario
+                $('#calendar').fullCalendar('removeEvents');
+    
                 // Agregar los eventos filtrados al calendario
                 $('#calendar').fullCalendar('addEventSource', filteredEvents);
             });
         });
     </script>
-
+    
 </body>
 
 </html>
