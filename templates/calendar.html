@@ -78,18 +78,28 @@
     </style>
 
     <style>
-        @media only screen and (max-width: 768px) {
+        @media (max-width: 768px) {
             #subFilter,
             #pmFilter,
             #addressFilter {
-                width: 100%;
+                width: 40%;
             }
+            
             #sidebar {
                 width: 100%;
                 padding: 10px;
                 background-color: #ffffff;
                 box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
                 border-radius: 10px;
+                display: grid;
+            }
+
+            hr{
+                display: none;
+            }
+
+            #sidebar label {
+                margin-right: 10px; /* Añade espacio entre la etiqueta y el select */
             }
 
             #calendar-container {
