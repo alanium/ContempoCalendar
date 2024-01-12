@@ -8,120 +8,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='fullcalendar.min.css') }}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css">
-    <style>
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            font-family: 'Roboto', sans-serif;
-            background-color: #f5f5f5;
-            display: flex;
-            height: 100vh;
-        }
-
-        #sidebar {
-            width: 300px;
-            padding: 20px;
-            background-color: #ffffff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-
-        #calendar-container {
-            flex: 1;
-            background-color: #ffffff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-
-        #calendar {
-            width: 100%;
-        }
-
-        .event-details {
-            margin-top: 10px;
-            font-size: 10px;
-            max-height: 20px;
-        }
-
-        .fc-content {
-            padding: 5px;
-            border-radius: 5px;
-            background-color: #4285f4;
-            color: #fff;
-            cursor: pointer;
-        }
-
-        .fc-event {
-            margin-bottom: 15px;
-        }
-
-        .fc-day-header {
-            background-color: #4285f4;
-            color: #fff;
-        }
-
-        .fc-toolbar {
-            text-align: left;
-        }
-
-        .fc-center h2 {
-            display: inline-block;
-            margin-right: 10px;
-        }
-
-        #subFilter,
-        #pmFilter,
-        #addressFilter {
-            width: 100%;
-        }
-    </style>
-
-    <style>
-        @media (max-width: 768px) {
-            #subFilter,
-            #pmFilter,
-            #addressFilter {
-                width: 40%;
-            }
-            
-            #sidebar {
-                width: 100%;
-                padding: 10px;
-                background-color: #ffffff;
-                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                border-radius: 10px;
-                display: grid;
-            }
-
-            hr{
-                display: none;
-            }
-
-            #sidebar label {
-                margin-right: 10px; /* Añade espacio entre la etiqueta y el select */
-            }
-
-            #calendar-container {
-                flex: 1;
-                background-color: #ffffff;
-                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                border-radius: 10px;
-            }
-            body,
-            html {
-                display: grid;
-                overflow: hidden;
-            }
-        }
-    </style>
-
-    
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
 <body>
-
     <div id="sidebar">
         <label for="subFilter">Filter by Sub:</label>
         <select id="subFilter" multiple="multiple"></select>
@@ -131,7 +21,11 @@
         <hr>
         <label for="pmFilter">Filter by PM:</label>
         <select id="pmFilter" multiple="multiple"></select>
+        <hr>
+        <label for="clientFilter">Filter by Client:</label>
+        <select id="clientFilter" multiple="multiple"></select>
     </div>
+    
 
     <div id="calendar-container">
         <div id="calendar"></div>
@@ -172,6 +66,20 @@
             var uniquePMs = Array.from(new Set(initialData.map(function (event) {
                 return event.pm;
             })));
+
+            var uniqueClients = Array.from(new Set(initialData.map(function (event) {
+                return event.client;
+            })));
+            
+            $('#clientFilter').select2({
+                width: 'resolve',
+                data: uniqueClients.map(function (client) {
+                    return {
+                        id: client,
+                        text: client
+                    };
+                })
+            });
 
             $('#subFilter').select2({
                 width: 'resolve',
@@ -238,22 +146,25 @@
                 $('#calendar').fullCalendar('option', 'height', containerHeight);
             }).trigger('resize');
 
-            $('#subFilter, #addressFilter, #pmFilter').on('select2:select select2:unselect', function (e) {
+            $('#subFilter, #addressFilter, #pmFilter, #clientFilter').on('select2:select select2:unselect', function (e) {
                 var selectedSubs = $('#subFilter').val() || [];
                 var selectedAddresses = $('#addressFilter').val() || [];
                 var selectedPMs = $('#pmFilter').val() || [];
-
+                var selectedClients = $('#clientFilter').val() || [];
+            
                 var filteredEvents = initialData.filter(function (event) {
                     return (
                         (selectedSubs.length === 0 || selectedSubs.includes(event.sub)) &&
                         (selectedAddresses.length === 0 || selectedAddresses.includes(event.address)) &&
-                        (selectedPMs.length === 0 || selectedPMs.includes(event.pm))
+                        (selectedPMs.length === 0 || selectedPMs.includes(event.pm)) &&
+                        (selectedClients.length === 0 || selectedClients.includes(event.client))
                     );
                 });
-
+            
                 $('#calendar').fullCalendar('removeEvents');
                 $('#calendar').fullCalendar('addEventSource', filteredEvents);
             });
+            
         });
     </script>
 
