@@ -22,7 +22,7 @@ def authorize_google_sheets(credentials_file, spreadsheet_id, worksheet_name):
         else:
             raise
 
-def parse_event_data(data):
+def parse_event_data_legacy(data):
     events_list = []
 
     for row in data[1:]:
@@ -45,6 +45,41 @@ def parse_event_data(data):
                 'client': row[1]
             }
             events_list.append(event)
+
+    return events_list
+
+def parse_event_data(data):
+    events_list = []
+
+    for row in data[1:]:
+        start_date_str = row[8]
+        end_date_str = row[9]
+
+        try:
+            if start_date_str and end_date_str:
+                # Convertir la cadena de fecha a objetos de fecha
+                start_date = datetime.strptime(start_date_str + '/2024', '%m/%d/%Y')
+                end_date = datetime.strptime(end_date_str + '/2024', '%m/%d/%Y')
+
+                start_date_str = start_date.strftime('%Y-%m-%d')
+                end_date_str = end_date.strftime('%Y-%m-%d')
+
+                event = {
+                    'title': row[3],
+                    'start': start_date_str,
+                    'end': end_date_str,
+                    'allDay': True,
+                    'address': row[2],
+                    'sub_task': row[4],
+                    'sub': row[5],
+                    'pm': row[0],
+                    'client': row[1]
+                }
+                events_list.append(event)
+
+        except ValueError as e:
+            print("Error parsing date:", e)
+            print("Row data:", row)  # Esto imprimirá la fila que causa el error
 
     return events_list
 
