@@ -73,7 +73,8 @@ def parse_event_data(data):
                     'sub_task': row[4],
                     'sub': row[5],
                     'pm': row[0],
-                    'client': row[1]
+                    'client': row[1],
+                    'eta': row[10]
                 }
                 events_list.append(event)
 

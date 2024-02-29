@@ -129,12 +129,17 @@
                     element.find('.fc-content').css('background-color', color);
 
                     element.on('click', function () {
+                        var end2 = event.end ? event.end.format() : event.start.format();
+
                         alert(
                             'Task-name: ' + event.title + '\n' +
                             'Sub-task: ' + event.sub_task + '\n' +
                             'Address: ' + event.address + '\n' +
                             'Sub: ' + event.sub + '\n' +
                             'Client: ' + event.client + '\n' +
+                            'ETA: ' + event.eta + '\n' +
+                            'Start: ' + event.start.format() + '\n' +
+                            'End: ' + end2 + '\n' +
                             'PM: ' + event.pm);
                     });
                 },
